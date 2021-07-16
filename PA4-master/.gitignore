@@ -1,0 +1,13 @@
+.vscode
+src/ast-lex.*
+src/ast-parse.*
+src/cgen
+src/cgen-phase.*
+src/cool-tree.cc
+src/dumptype.*
+src/handle_flags.*
+src/stringtab.*
+src/tree.*
+src/utilities.*
+src/*.o
+src/example.cl

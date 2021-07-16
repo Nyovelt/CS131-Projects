@@ -1,0 +1,16 @@
+before_script:
+  - echo "Welcome to the grader for PA4"
+   
+after_script:
+  - echo "End of Grader, You finish all the compiler test. Congrats!"
+   
+build-and-grade:
+  stage: build
+  script:
+    - cd src
+    - make
+    - ~/cool-test/test.sh
+
+  tags:
+    - pa
+   

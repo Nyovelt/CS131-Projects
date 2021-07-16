@@ -1,0 +1,52 @@
+Building CgenClassTable
+Building CgenNode for Object
+   Method: abort Class: Object dispatch table offset: 0
+   Method: type_name Class: Object dispatch table offset: 1
+   Method: copy Class: Object dispatch table offset: 2
+Building CgenNode for IO
+   Method: out_string Class: IO dispatch table offset: 3
+   Method: out_int Class: IO dispatch table offset: 4
+   Method: in_string Class: IO dispatch table offset: 5
+   Method: in_int Class: IO dispatch table offset: 6
+For class IO tag is 1 and max child is 1
+Building CgenNode for Int
+   Attribute: _val Class: Int offset: 0 initialization : no
+For class Int tag is 2 and max child is 2
+Building CgenNode for Bool
+   Attribute: _val Class: Bool offset: 0 initialization : no
+For class Bool tag is 3 and max child is 3
+Building CgenNode for String
+   Attribute: _val Class: String offset: 0 initialization : no
+   Attribute: _str_field Class: String offset: 1 initialization : no
+   Method: length Class: String dispatch table offset: 3
+   Method: concat Class: String dispatch table offset: 4
+   Method: substr Class: String dispatch table offset: 5
+For class String tag is 4 and max child is 4
+Building CgenNode for Main
+   Method: main Class: Main dispatch table offset: 3
+For class Main tag is 5 and max child is 5
+For class Object tag is 0 and max child is 5
+coding global data
+choosing gc
+coding constants
+coding class table
+coding object table
+coding dispatch tables
+coding prototypes
+coding global text
+coding init methods
+Coding init method of class Object first attribute: 0 # attributes: 0
+Number of temporaries = 0
+Coding init method of class Main first attribute: 0 # attributes: 0
+Number of temporaries = 0
+Coding init method of class String first attribute: 0 # attributes: 2
+Number of temporaries = 0
+Coding init method of class Bool first attribute: 0 # attributes: 1
+Number of temporaries = 0
+Coding init method of class Int first attribute: 0 # attributes: 1
+Number of temporaries = 0
+Coding init method of class IO first attribute: 0 # attributes: 0
+Number of temporaries = 0
+coding methods
+  Coding method: main
+    Omitting move from $a0 to $a0

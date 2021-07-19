@@ -1,0 +1,341 @@
+\documentclass[10pt]{article}
+\usepackage[pdftex]{graphicx, color}
+\usepackage{listings,proof}
+
+\usepackage{tikz}
+\usepackage{hyperref}
+\usetikzlibrary{automata,positioning}
+
+\headheight 8pt \headsep 20pt \footskip 30pt
+\textheight 9in \textwidth 6.5in
+\oddsidemargin 0in \evensidemargin 0in
+\topmargin -.35in
+\lstset{
+  basicstyle=\ttfamily,
+  mathescape
+}
+\lstset{basicstyle=\small\ttfamily,breaklines=true}
+\newcommand {\pts}[1]{{\bf #1 pts}}
+\newcommand{\ttmath}[1]{$\mathtt{#1}$}
+\newcommand{\ossimple}[6]{#1,#2,#3\vdash #4 : #5,#6}
+\newcommand{\osrule}[8]{\frac{#7}{\ossimple{#1}{#2}{#3}{#4}{#5}{#6}}\eqno
+  \mbox{#8}}
+\newcommand{\infertext}[2]{\infer{{\textrm{#1}}}{#2}}
+
+\begin{document}
+\begin{center}
+\Large CS131 Compilers: Writing Assignment 3\\Due Saturday, May 15, 2021 at 23:59pm
+\end{center}
+
+\begin{center}
+%% Change this:
+\LARGE  Feiran Qin - 2019533161
+\end{center}
+
+This assignment asks you to prepare written answers to questions on
+semantic analysis. Each of the questions has a short answer. You
+may discuss this assignment with other students and work on the problems
+together. However, your write-up should be your own individual work.
+and you should indicate in your submission who you worked with, if applicable.
+Written assignments are turned in at the start of lecture.
+You should use the Latex template provided at the course web site to write your solution.
+
+\begin{center}
+%% Change this:
+I worked with: (Yining Zhang, 2019533103)
+\end{center}
+
+Example for type rule in tex:
+\[\infertext
+          {$O$[Bo/x][Ob/x] $\vdash$ x: Ob}
+          {\textrm{$O$[Bo/x][Ob/x](x) = Ob}}       
+\]
+
+\begin{enumerate}
+\item (10 pts) Consider the following class definitions.
+\begin{verbatim}
+  class A {
+    i: Int
+    o: Object
+    b: B <- new B
+    x: SELF_TYPE
+    f(): SELF_TYPE {x}
+  }
+  class B inherits A {
+    g(b: Bool): Object { (* EXPRESSION *) }
+  }
+\end{verbatim}
+
+Assume that the type checker implements the rules described in the lectures and in the Cool Reference
+Manual. For each of the following expressions, occurring in place of (* EXPRESSION *) in the body
+of the method \emph{g}, show the static type inferred by the type checker for the expression. If the expression
+causes a type error, give a brief explanation of why the appropriate type checking rule for the expression
+cannot be applied.
+
+\begin{enumerate}
+  \item \begin{verbatim} x    \end{verbatim}
+  \noindent {\em Solution:}
+  \verb |SELF_TYPE_b|
+  \item \begin{verbatim} self = x \end{verbatim}
+  \noindent {\em Solution:}Bool
+  \item \begin{verbatim} self = i \end{verbatim}
+  \noindent {\em Solution:}error, the two sides of '=' is self and int, which is not equal.
+  \item \begin{verbatim} let x: B <- x in x \end{verbatim}
+  \noindent {\em Solution:}B
+  \item \begin{verbatim}
+case o of
+    o: Int => b;
+    o: Bool => o;
+    o: Object => true;
+esac
+\end{verbatim}
+\noindent {\em Solution:}Bool
+\end{enumerate}
+
+\medskip
+
+\item (10 pts) Show the full type \emph{derivation tree }for the following judgement:
+(You can use Bo as the type Bool and Ob as the type Object)
+
+\begin{center}
+$O$[Bool/x] $\vdash$ \tt{x $<$- (let x:Object $<$- x in x = x): Bool}
+\end{center}
+ {\em Solution:}
+\[
+  \infertext
+  {$O$[Bo/x] $\vdash$ \tt{x $<$- (let x:Object $<$- x in x = x): Bo}
+  }
+  {\infertext
+    {$O$[Bool/x] $\vdash$ let x:Object $<$- x in x = x : Bo}
+    {
+    \infertext
+    {$0$ [Bool/x] $\vdash$ x=x : Bool}
+    {\quad O[Bool/x] \vdash x: Ob \quad
+    \quad O[Bool/x] \vdash x: Ob \quad
+\Rightarrow Ob = Ob
+    }
+    \quad O[Bool/x]  \vdash x:Bo
+    \quad Bo \leq Ob
+    }
+    \quad Bo \leq Bo
+    \quad O(x) = Bo  
+  }
+\]
+
+\medskip
+\item (10 pts) Suppose we extend the grammar for Cool with a ``{\bf void}'' keyword
+\begin{eqnarray*}
+  expr & ::= & {\bf void} \\
+       & |   & ...
+\end{eqnarray*}
+
+  that is analogous to {\tt null} in Java. (Currently objects are
+  initialized to void if they have no other initializer specified, but
+  there is no general-purpose {\bf void} keyword.)  We want to be able
+  to use {\bf void} whereever an object can be used, as in
+\begin{verbatim}
+  let foo:Int <- if some_test
+                 then 5
+                 else void
+                 fi
+  in ...
+\end{verbatim}
+
+  Give a sound typing rule that we can add to the Cool specification
+  to accomodate this new keyword.
+
+  \noindent {\em Solution:}
+  \[
+  \infertext
+    {$O,M,C \vdash$ void: T}
+    {}
+  \]
+
+\medskip
+\item  (10 pts) Suppose we extend Cool with exceptions by adding two new constructs
+to the Cool language.
+\begin{eqnarray*}
+  expr & ::= & \textit{\bf try } expr \;\textit{\bf catch } ID => expr \\
+       & |   & \textit{\bf throw } expr \\
+       & | & ...
+\end{eqnarray*}
+Here {\bf try}, {\bf catch} and {\bf throw} are three new terminals.
+  ``${\bf throw }\;\; expr$'' returns $expr$ to the
+  closest dynamically enclosing catch block.
+Note that since {\bf throw} expression returns control to a different location, we do not really
+  care about the context in which throw is used. For example,
+({\bf throw} $false) + 2$ is a valid Cool expression (However, note that
+  ({\bf throw} $false) + (2+true)$ is not a valid Cool expression).  Following is an example that uses the
+try-catch and throw constructs.
+\begin{verbatim}
+try
+   if some_test1 then throw 34
+   else if some_test2 then throw ``undefined error''
+   else do_something fi fi
+catch x =>
+  case x of
+      x:Int => do_something1
+      x:String => do_something2
+  esac
+\end{verbatim}
+
+The above program fragment executes
+  ``do\_something1'' (with $x$ bound to the value 34) if ``some\_test1''
+  evaluates to \textsf{true}. It executes ``do\_something2'' (with $x$ bound to the
+  value ``undefined error'') if ``some\_test1'' evaluates to \textsf{false} but
+  ``some\_test2'' evaluates to \textsf{true}. It executes ``do\_something'' if both
+  ``some\_test1'' and ``some\_test2'' evaluate to \textsf{false}.
+
+
+Give a set of new sound typing rules that we can add to the Cool specification
+to accommodate these two new constructs.
+
+\medskip
+
+\noindent {\em Solution:}
+\[
+\infertext
+  {$O,M,C \vdash$ throw e: $T$}
+  {O,M,C \vdash e: T_1}
+\]
+
+\[
+\infertext
+    {$O,M,C \vdash$ try $e_1$ catch $x => e_2$: $\;\;T_1 \cup T_2$}
+    {\textrm{$O,M,C \vdash e_1:\;\;T_1 \;\;\;\;\; O[Object/x],M,C \vdash e_2:\;\;T_2$}}
+\]
+
+
+\item (10 pts) The Java programming language includes arrays.  The Java
+language specification states that if $s$ is an array of elements of
+class $S$, and $t$ is an array of elements of class $T$, then the
+assignment $s = t$ is allowed as long as $T$ is a subclass of $S$.
+This typing rule for array assignments turns out to be unsound. (Java
+works around the fact that this rule is not statically sound by inserting
+runtime checks to generate an exception if arrays are used
+unsafely. For this question, assume there are no special runtime checks.)
+
+Consider the following Java program, which type checks according
+to the preceeding rule:
+\begin{verbatim}
+class Mammal { String name; }
+
+class Dog extends Mammal { void beginBarking() { ... } }
+
+class Main {
+    static public void main(String argv[]) {
+        Dog x[] = new Dog[5];
+        Mammal y[] = x;
+
+        /* Insert code here */
+    }
+}
+\end{verbatim}
+Add code to the \texttt{main} method so that the resulting program is
+a valid Java program (i.e., it type checks statically and so it will
+compile), but the program could result in an error being applied
+to an inappropriate type when executed.  Include a brief explanation
+of how your program exhibits the problem.
+
+
+\noindent {\em Solution:}
+\begin{verbatim}
+
+
+
+        class Mammal { String name; }
+
+        class Dog extends Mammal { void beginBarking() { ... } }
+        
+        class Main {
+            static public void main(String argv[]) {
+                Dog x[] = new Dog[5];
+                Mammal y[] = x;
+        
+                Mammal Horse = new Mammal();
+                y[0] = Horse;                 
+                x[0].beginBarking();
+            }
+        }
+\end{verbatim}
+
+When doing  Mammal y[]=x, it records the address of x[], which is new Dog[5]. When I give y[0] the Horse, which is the father class of Dog, it is considerd safe, since Dog <= Mammal. However, the actual is unsafe, Horse don't have beginBarking() but passed the type checking. 
+
+\medskip
+
+
+
+\item (10 pts) Now that you know why Java arrays are problematic, you decide to add an array construct
+to Cool with sound typing rules. An array containing objects of type A is declared as being of type
+\textsf{Array(A)} and one can create arrays in Cool using the \textsf{new Array[A][e]} construct, where \textsf{e} is an
+expression of type \textsf{Int}, specifying the size of the array.
+One can access elements in the array using
+the construct \textsf{e1[e2]} which yields the \textsf{e2}'th element in array \textsf{e1},
+and one can insert elements into the array using the notation \textsf{e1[e2] $<$- e3}.
+Finally, as in Java, an assignment from one array \textsf{a} to an
+array \textsf{b} does not make copies of the elements contained in \textsf{a}, but addresses of elements.
+
+\begin{enumerate}
+  \item (2 pts) Give a sound subtype relation for arrays in Cool, i.e., state the conditions under which
+the subtype relation \textsf{Array(T)$\le$ T'} is valid.
+\\
+\noindent {\em Solution:}
+\[
+  \infertext{Array(T) $\leq$ $T^{''}$}{T' = Array(T'') T \leq T'''}
+\]
+
+
+
+
+  \item Give sound typing rules that are as permissive as possible for the following constructs:
+
+\begin{enumerate}
+    \item (2 pts) \textsf{new Array[A][e]}
+    \\
+\noindent {\em Solution:}
+\[
+  \infertext{O,M,C $\vdash$ new Array[A][e]: Array(A)}{O,M,C \vdash e: Int}
+\]
+    
+    \item (2 pts) \textsf{e1[e2]}
+    \\
+    \noindent {\em Solution:}
+    \[
+      \infertext{O,M,C $\vdash$ e1[e2]: Array(A)}{O,M,C \vdash e_1: Array(A) \quad O,M,C \vdash  e_2: Int}
+    \]
+    \item (4 pts) \textsf{e1[e2] $<$- e3}. Assume the type of the whole expression is the type of \textsf{e1}.
+    \\
+    \noindent {\em Solution:}
+    \[
+      \infertext{O,M,C $\vdash$ e1[e2] $<$- e3 : Array(A)}{O,M,C \vdash e_1: Array(A) \quad O,M,C \vdash  e_2: Int \quad O,M,C \vdash  e_3: T' \quad T' \leq A}
+    \]
+\end{enumerate}
+\end{enumerate}
+\item (10 pts) The \href{http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1124.pdf}{C programming language} includes \href{https://outflux.net/slides/2018/lss/danger.pdf}{variable-length arrays}(VLA), a feature where we can allocate an auto array (on stack) of variable size, which was used widely in the Linux Kernel for resource allocation. But because of the tedious translation into the machine code and possible security issue, the recent kernel is VLA-free and C++ is partially abandon it. Therefore, the compiler shall do the semantic check for unacceptable following statements. Extend the typing semantics can be found at \href{http://www.softlab.ntua.gr/~nickie/Papers/papaspyrou-1998-fscpl.pdf}{C manual 8.1.2 Function calls} and \href{https://users.cs.northwestern.edu/~jesse/course/eecs230-wi18/lec/06semantics.pdf}{C++ semantics page 7}, so that the following C++ code will emit a semantic error.
+\begin{lstlisting}[language=C++]
+template<class T>class array{ 
+  int s;
+  T* elements; 
+public:
+  array(int n); // allocate "n" elements and let "elements" refer to them 
+  array(T* p, int n); // make this array refer to p[0..n-1]
+  operator T*(){return elements;}
+  int size()const{return s;} 
+  // the usual container operations, such as = and [], much like vector 
+};
+
+void h(array<double>a); //C++
+void g(int m,double vla[m]); //C99
+void f(int m,double vla1[m],array<double>a1) {
+    array<double> a2(vla1,m); // a2 refers to vla1 
+    double*p=a1; //p refers to a1's elements
+
+    g(m,vla1);
+    g(a1.size(),a1); // a bit verbose 
+    g(a1); //???
+}
+\end{lstlisting}
+The calls marked with ? ? ? cannot be written in C++. Had they gotten past the type checking, the result would have executed correctly because of structural equivalence. If we somehow accept these calls, by a general mechanism or by a special rule for array and VLAs, arrays and VLAs would be completely interchangeable and a programmer could choose whichever style best suited taste and application.
+\end{enumerate}
+\end{document}
+
